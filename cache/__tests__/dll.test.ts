@@ -1,4 +1,4 @@
-import DoublyLinkedList, { DoublyLinkedListNode } from "../src/cache/dll";
+import DoublyLinkedList, { DoublyLinkedListNode } from "../src/dll";
 
 jest.useFakeTimers();
 

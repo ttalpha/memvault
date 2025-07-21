@@ -1,6 +1,0 @@
-{
-  "watch": ["src/cache"],
-  "ext": "ts,json",
-  "ignore": ["src/cache/**/*.spec.ts"],
-  "exec": "npx ts-node ./src/cache/index.ts"
-}

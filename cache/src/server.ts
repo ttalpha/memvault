@@ -7,7 +7,7 @@ export default class CacheServer {
   private server: net.Server | null = null;
 
   private port = 6379;
-  private host = "127.0.0.1";
+  private host = "0.0.0.0"; // allow the client to connect to Docker containers (NOT 127.0.0.1)
 
   private get(key: string) {
     try {

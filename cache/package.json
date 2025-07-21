@@ -1,14 +1,15 @@
 {
-  "name": "memvault",
+  "name": "cache",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "start": "node dist/index.js",
     "test": "jest",
+    "build": "tsc",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "dev:cache": "nodemon --config cache-nodemon.json",
-    "dev:client": "nodemon"
+    "dev": "nodemon"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",

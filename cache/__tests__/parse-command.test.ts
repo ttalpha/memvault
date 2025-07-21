@@ -1,4 +1,4 @@
-import { parseCommand } from "../src/cache/parse-command";
+import { parseCommand } from "../src/parse-command";
 
 describe("parseCommand", () => {
   it("parses GET command", () => {

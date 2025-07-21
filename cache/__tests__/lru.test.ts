@@ -1,4 +1,4 @@
-import { LRUCache } from "../src/cache/lru";
+import { LRUCache } from "../src/lru";
 
 describe("LRUCache", () => {
   it("should set and get values", () => {
