@@ -33,13 +33,13 @@ DEL <key>
 (more to be added. Read the code to understand how it works)
 
 ## Works Done
-[x] Storing key-value pairs in the cache
-[x] Implementing LRU policy, TTL with lazy expiration
-[x] Sharding with consistent hashing (AVL Tree)
+- [x] Storing key-value pairs in the cache
+- [x] Implementing LRU policy, TTL with lazy expiration
+- [x] Sharding with consistent hashing (AVL Tree)
 
 ## Future Works
-[ ] Synchronous Replication
-[ ] Failure Detection
-[ ] Leader Election
-[ ] Re-balancing / Self-healing
-[ ] Data persistence on disk
+- [ ] Synchronous Replication
+- [ ] Failure Detection
+- [ ] Leader Election
+- [ ] Re-balancing / Self-healing
+- [ ] Data persistence on disk
