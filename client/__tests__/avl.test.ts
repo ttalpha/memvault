@@ -1,4 +1,4 @@
-import { AVLTree } from "../src/avl";
+import { AVLTree, BSTNode } from "../src/avl";
 
 describe("AVLTree", () => {
   let tree: AVLTree<string>;
@@ -103,11 +103,10 @@ describe("AVLTree", () => {
       expect(tree.getNearestLargerNode(10)).toBeNull();
     });
 
-    test("returns root if only one node and key matches", () => {
+    test("returns null if only one node and key matches", () => {
       tree.set(10, "ten");
       const node = tree.getNearestLargerNode(10);
-      expect(node?.key).toBe(10);
-      expect(node?.value).toBe("ten");
+      expect(node).toBeNull();
     });
 
     test("returns root if only one node and key is less", () => {
@@ -120,15 +119,6 @@ describe("AVLTree", () => {
       tree.set(10, "ten");
       const node = tree.getNearestLargerNode(15);
       expect(node).toBeNull();
-    });
-
-    test("returns node with exact key if present", () => {
-      tree.set(10, "ten");
-      tree.set(20, "twenty");
-      tree.set(5, "five");
-      const node = tree.getNearestLargerNode(20);
-      expect(node?.key).toBe(20);
-      expect(node?.value).toBe("twenty");
     });
 
     test("returns nearest larger node for key not present", () => {
@@ -169,11 +159,11 @@ describe("AVLTree", () => {
 
       // key = 35, nearest larger is 50
       node = tree.getNearestLargerNode(35);
-      expect(node?.key).toBe(35);
+      expect(node?.key).toBe(50);
 
       // key = 80, nearest larger is 80 (exact match)
       node = tree.getNearestLargerNode(80);
-      expect(node?.key).toBe(80);
+      expect(node).toBeNull();
 
       // key = 81, nearest larger is null
       node = tree.getNearestLargerNode(81);
@@ -731,6 +721,148 @@ describe("AVLTree", () => {
 
       tree.delete(80);
       expect(tree.findMax()).toBe(70);
+    });
+  });
+
+  describe("getMinNode", () => {
+    let tree: AVLTree<string>;
+
+    beforeEach(() => {
+      tree = new AVLTree<string>();
+    });
+
+    test("returns null for empty tree", () => {
+      expect(tree.getMinNode()).toBeNull();
+    });
+
+    test("returns root for single node tree", () => {
+      tree.set(10, "ten");
+      const minNode = tree.getMinNode();
+      expect(minNode?.key).toBe(10);
+      expect(minNode?.value).toBe("ten");
+    });
+
+    test("returns leftmost node for multi-node tree", () => {
+      tree.set(20, "twenty");
+      tree.set(10, "ten");
+      tree.set(5, "five");
+      tree.set(15, "fifteen");
+      tree.set(25, "twentyfive");
+      const minNode = tree.getMinNode();
+      expect(minNode?.key).toBe(5);
+      expect(minNode?.value).toBe("five");
+    });
+
+    test("works with explicit root argument (subtree)", () => {
+      tree.set(20, "twenty");
+      tree.set(10, "ten");
+      tree.set(5, "five");
+      tree.set(15, "fifteen");
+      tree.set(25, "twentyfive");
+      const leftSubtree = tree.root?.left;
+      const minNode = tree.getMinNode(leftSubtree);
+      expect(minNode?.key).toBe(5);
+      expect(minNode?.value).toBe("five");
+    });
+  });
+
+  describe("getSuccessor", () => {
+    let tree: AVLTree<string>;
+
+    beforeEach(() => {
+      tree = new AVLTree<string>();
+    });
+
+    test("returns null for empty tree", () => {
+      expect(tree.getSuccessor(null)).toBeNull();
+    });
+
+    test("returns null for single node tree", () => {
+      tree.set(10, "ten");
+      const node = tree.get(10)!;
+      expect(tree.getSuccessor(node)).toBeNull();
+    });
+
+    test("returns min of right subtree if node has right child", () => {
+      tree.set(20, "twenty");
+      tree.set(10, "ten");
+      tree.set(30, "thirty");
+      tree.set(25, "twentyfive");
+      tree.set(35, "thirtyfive");
+      const node = tree.get(30)!;
+      const successor = tree.getSuccessor(node);
+      expect(successor?.key).toBe(35);
+      expect(successor?.value).toBe("thirtyfive");
+    });
+
+    test("returns nearest ancestor for which node is in left subtree", () => {
+      tree.set(20, "twenty");
+      tree.set(10, "ten");
+      tree.set(30, "thirty");
+      tree.set(25, "twentyfive");
+      tree.set(35, "thirtyfive");
+      const node = tree.get(25)!;
+      const successor = tree.getSuccessor(node);
+      expect(successor?.key).toBe(30);
+      expect(successor?.value).toBe("thirty");
+    });
+
+    test("returns null for max node", () => {
+      tree.set(20, "twenty");
+      tree.set(10, "ten");
+      tree.set(30, "thirty");
+      tree.set(25, "twentyfive");
+      tree.set(35, "thirtyfive");
+      const node = tree.get(35)!;
+      expect(tree.getSuccessor(node)).toBeNull();
+    });
+
+    test("returns next larger node for min node", () => {
+      tree.set(20, "twenty");
+      tree.set(10, "ten");
+      tree.set(30, "thirty");
+      tree.set(5, "five");
+      tree.set(15, "fifteen");
+      const node = tree.get(5)!;
+      const successor = tree.getSuccessor(node);
+      expect(successor?.key).toBe(10);
+      expect(successor?.value).toBe("ten");
+    });
+
+    test("returns correct successor for middle node", () => {
+      tree.set(20, "twenty");
+      tree.set(10, "ten");
+      tree.set(30, "thirty");
+      tree.set(25, "twentyfive");
+      tree.set(35, "thirtyfive");
+      const node = tree.get(20)!;
+      const successor = tree.getSuccessor(node);
+      expect(successor?.key).toBe(25);
+      expect(successor?.value).toBe("twentyfive");
+    });
+
+    test("returns correct successor for root node", () => {
+      tree.set(20, "twenty");
+      tree.set(10, "ten");
+      tree.set(30, "thirty");
+      tree.set(25, "twentyfive");
+      tree.set(35, "thirtyfive");
+      const node = tree.root!;
+      const successor = tree.getSuccessor(node);
+      expect(successor?.key).toBe(25);
+      expect(successor?.value).toBe("twentyfive");
+    });
+
+    test("returns correct successor for leaf node", () => {
+      tree.set(20, "twenty");
+      tree.set(10, "ten");
+      tree.set(30, "thirty");
+      tree.set(25, "twentyfive");
+      tree.set(35, "thirtyfive");
+      const node = tree.get(25)!;
+      const successor = tree.getSuccessor(node);
+      expect(successor?.key).toBe(30);
+      expect(successor?.value).toBe("thirty");
     });
   });
 });

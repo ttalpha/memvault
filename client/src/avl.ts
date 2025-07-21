@@ -28,8 +28,7 @@ export class AVLTree<T> {
     let candidate: BSTNode<T> | null = null;
 
     while (root !== null) {
-      if (root.key === key) return root;
-      else if (root.key > key) {
+      if (root.key > key) {
         candidate = root;
         root = root.left;
       } else {
@@ -38,6 +37,37 @@ export class AVLTree<T> {
     }
 
     return candidate;
+  }
+
+  getMinNode(root: BSTNode<T> | null = this.root): BSTNode<T> | null {
+    while (root && root.left) {
+      root = root.left;
+    }
+    return root;
+  }
+
+  /**
+   * Finds the next node in in-order traversal of a binary tree
+   */
+  getSuccessor(node: BSTNode<T> | null): BSTNode<T> | null {
+    if (!node) return null;
+    if (node.right) return this.getMinNode(node.right);
+
+    let successor: BSTNode<T> | null = null;
+    let current = this.root;
+
+    while (current) {
+      if (node.key < current.key) {
+        successor = current;
+        current = current.left;
+      } else if (node.key > current.key) {
+        current = current.right;
+      } else {
+        break;
+      }
+    }
+
+    return successor;
   }
 
   getBalanceFactor(root: BSTNode<T> | null = this.root): number {
