@@ -31,6 +31,8 @@ export const VALID_DELETE_COMMAND = /^DEL\s+(\S+)\s*$/i;
 export const VALID_SET_COMMAND =
   /^SET\s+(\S+)\s+"((?:[^"\\]|\\.)*)"(?:\s+EX\s+(\d+))?\s*$/i;
 
+export const VALID_PING_COMMAND = /^\s*PING\s*$/i;
+
 // --- Example Usage ---
 
 export type GetCommand = {
@@ -55,7 +57,16 @@ export type UnknownCommand = {
   original: string;
 };
 
-export type Command = GetCommand | SetCommand | DeleteCommand | UnknownCommand;
+export type PingCommand = {
+  type: "PING";
+};
+
+export type Command =
+  | GetCommand
+  | SetCommand
+  | DeleteCommand
+  | UnknownCommand
+  | PingCommand;
 
 export function parseCommand(commandString: string): Command {
   let match;
@@ -78,6 +89,11 @@ export function parseCommand(commandString: string): Command {
   if (match) {
     const key = match[1];
     return { type: "DELETE", key: key };
+  }
+
+  match = commandString.match(VALID_PING_COMMAND);
+  if (match) {
+    return { type: "PING" };
   }
 
   return { type: "UNKNOWN", original: commandString };

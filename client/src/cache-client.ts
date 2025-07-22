@@ -51,35 +51,43 @@ export default class CacheClient {
     const PORT = port ?? 6379;
     const HOST = host ?? "127.0.0.1";
 
-    let socket = await this.tryConnect(PORT, HOST, maxRetries, retryDelay);
-    const ringIndices: number[] = [];
+    try {
+      const socket = await this.tryConnect(PORT, HOST, maxRetries, retryDelay);
+      const ringIndices: number[] = [];
 
-    for (let i = 0; i < vnodes; i++) {
-      const ringIndex = getHashRingIndex(`${HOST}:${PORT}-${i}`);
-      this.avlTree.set(ringIndex, {
-        socket,
-        vnode: i,
-        host: HOST,
-        port: PORT,
-      });
-      ringIndices.push(ringIndex);
-    }
-
-    socket.on("end", async () => {
-      console.log(
-        chalk.yellow(
-          `[${new Date().toISOString()}] [WARN] Disconnected from ${HOST}:${PORT} — cleaning up`
-        )
-      );
-      for (const index of ringIndices) {
-        this.avlTree.delete(index);
+      for (let i = 0; i < vnodes; i++) {
+        const ringIndex = getHashRingIndex(`${HOST}:${PORT}-${i}`);
+        this.avlTree.set(ringIndex, {
+          socket,
+          vnode: i,
+          host: HOST,
+          port: PORT,
+        });
+        ringIndices.push(ringIndex);
       }
-      console.log(
-        chalk.greenBright(
-          `[${new Date().toISOString()}] [INFO] Removed all ${vnodes} virtual nodes from the ring`
-        )
+
+      socket.on("end", async () => {
+        console.log(
+          chalk.yellow(
+            `[${new Date().toISOString()}] [WARN] Disconnected from ${HOST}:${PORT} — cleaning up`
+          )
+        );
+
+        for (const index of ringIndices) {
+          this.avlTree.delete(index);
+        }
+
+        console.log(
+          chalk.greenBright(
+            `[${new Date().toISOString()}] [INFO] Removed all ${vnodes} virtual nodes from the ring`
+          )
+        );
+      });
+    } catch (error) {
+      console.error(
+        chalk.redBright(`[${new Date().toISOString()}] [ERROR] ${error}`)
       );
-    });
+    }
   }
 
   private tryConnect(
@@ -87,18 +95,33 @@ export default class CacheClient {
     host: string,
     maxRetries: number,
     retryDelay = 1000,
-    attempt: number = 1
+    attempt: number = 0
   ): Promise<net.Socket> {
     return new Promise((resolve, reject) => {
       const socket = new net.Socket();
 
-      socket.connect({ port: port, host: host }, () => {
-        console.log(
-          chalk.greenBright(
-            `[${new Date().toISOString()}] [INFO] Connected to MemVault server at ${host}:${port}`
-          )
-        );
-        resolve(socket);
+      socket.connect({ port, host }, () => {
+        socket.write("PING\r\n");
+      });
+
+      socket.on("data", (data) => {
+        const response = data.toString().trim();
+        if (response === "PONG") {
+          console.log(
+            chalk.greenBright(
+              `[${new Date().toISOString()}] [INFO] Connected to MemVault server at ${host}:${port}`
+            )
+          );
+          socket.removeAllListeners("data"); // prevent future 'data' misfires
+          resolve(socket);
+        } else {
+          socket.destroy();
+          reject(
+            new Error(
+              `[ERROR] Unexpected response during handshake: ${response}`
+            )
+          );
+        }
       });
 
       socket.on("error", (err) => {
@@ -117,11 +140,9 @@ export default class CacheClient {
               .catch(reject);
           }, retryDelay);
         } else {
-          console.error(
-            chalk.redBright(
-              `[${new Date().toISOString()}] [ERROR] Failed to connect to ${host}:${port} after ${maxRetries} retries: ${
-                err.message
-              }`
+          reject(
+            new Error(
+              `[ERROR] Failed to connect to ${host}:${port} after ${maxRetries} retries`
             )
           );
         }

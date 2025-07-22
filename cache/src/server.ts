@@ -61,6 +61,9 @@ export default class CacheServer {
             );
             socket.write(getValue + "\r\n");
             break;
+          case "PING":
+            socket.write("PONG\r\n");
+            break;
           case "SET":
             const setResult = this.set(parsed.key, parsed.value, parsed.ttl);
             console.log(
