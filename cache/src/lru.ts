@@ -18,7 +18,6 @@ export class LRUCache {
     }
     this.dll.deleteNode(node);
     this.dll.append(node);
-    console.log(`[INFO] Get key ${key}`);
 
     return node.value;
   }
@@ -26,8 +25,6 @@ export class LRUCache {
   evict(key: string) {
     const node = this.hashMap.get(key);
     if (!node) return;
-
-    console.log(`[INFO] Evict key ${key}`);
     this.hashMap.delete(key);
     this.dll.deleteNode(node);
   }
@@ -50,7 +47,6 @@ export class LRUCache {
     }
     this.dll.append(newNode);
     this.hashMap.set(key, newNode);
-    console.log(`[INFO] Add key-value pair ${key}:"${value}"`);
   }
 
   delete(key: string) {
@@ -58,6 +54,5 @@ export class LRUCache {
     if (!node) return;
     this.hashMap.delete(key);
     this.dll.deleteNode(node);
-    console.log(`[INFO] Delete key ${key}`);
   }
 }

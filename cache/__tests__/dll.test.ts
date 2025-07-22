@@ -59,4 +59,53 @@ describe("DoublyLinkedList", () => {
     expect(str).toContain("a: 1");
     expect(str).toContain("b: 2");
   });
+
+  it("should handle multiple appends, moves, and deletes correctly", () => {
+    const dll = new DoublyLinkedList();
+    const nodes = Array.from(
+      { length: 5 },
+      (_, i) => new DoublyLinkedListNode(`k${i}`, `v${i}`, 100)
+    );
+    nodes.forEach((node) => dll.append(node));
+    expect(dll.head).toBe(nodes[0]);
+    expect(dll.tail).toBe(nodes[4]);
+
+    dll.deleteNode(nodes[2]);
+    dll.append(nodes[2]);
+    expect(dll.tail).toBe(nodes[2]);
+    expect(dll.head).toBe(nodes[0]);
+
+    dll.deleteNode(nodes[0]);
+    expect(dll.head).toBe(nodes[1]);
+    expect(dll.head?.prev).toBeNull();
+
+    dll.deleteNode(nodes[2]);
+    expect(dll.tail).toBe(nodes[4]);
+
+    dll.deleteNode(nodes[1]);
+    dll.deleteNode(nodes[3]);
+    dll.deleteNode(nodes[4]);
+    expect(dll.head).toBeNull();
+    expect(dll.tail).toBeNull();
+  });
+
+  it("should efficiently handle many appends and deletes (performance)", () => {
+    const dll = new DoublyLinkedList();
+    const N = 10000;
+    const nodes = [];
+    for (let i = 0; i < N; i++) {
+      const node = new DoublyLinkedListNode(`k${i}`, `v${i}`, 100);
+      dll.append(node);
+      nodes.push(node);
+    }
+    expect(dll.head).toBe(nodes[0]);
+    expect(dll.tail).toBe(nodes[N - 1]);
+
+    // Delete all nodes
+    for (let i = 0; i < N; i++) {
+      dll.deleteNode(nodes[i]);
+    }
+    expect(dll.head).toBeNull();
+    expect(dll.tail).toBeNull();
+  });
 });

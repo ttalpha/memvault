@@ -1,4 +1,5 @@
 import express from "express";
+import chalk from "chalk";
 import CacheClient from "./cache-client";
 import { deleteUser, fetchUserFromDB, updateUser } from "./users";
 
@@ -21,12 +22,20 @@ app.get("/user/:id", async (req, res) => {
     // 1. Try to get from MemVault
     const cachedUser = await cacheClient.get(cacheKey);
     if (cachedUser) {
-      console.log(`[APP] Cache HIT for key: ${cacheKey}`);
+      console.log(
+        chalk.greenBright(
+          `[${new Date().toISOString()}] [INFO] Cache HIT for key: ${cacheKey}`
+        )
+      );
 
       return res.json({ source: "cache", data: JSON.parse(cachedUser) });
     }
 
-    console.log(`[APP] Cache MISS for key: ${cacheKey}`);
+    console.log(
+      chalk.greenBright(
+        `[${new Date().toISOString()}] [INFO] Cache MISS for key: ${cacheKey}`
+      )
+    );
 
     const userFromDB = await fetchUserFromDB(userId);
 
@@ -37,7 +46,13 @@ app.get("/user/:id", async (req, res) => {
 
     res.status(404).json({ message: "User not found" });
   } catch (error) {
-    console.error("[APP] Error fetching user:", error);
+    console.log(error);
+
+    console.error(
+      chalk.redBright(
+        `[${new Date().toISOString()}] [ERROR] Error fetching user: ${error}`
+      )
+    );
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -53,9 +68,18 @@ app.put("/user/:id", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
 
     cacheClient.set(cacheKey, JSON.stringify(updatedUser));
+    console.log(
+      chalk.greenBright(
+        `[${new Date().toISOString()}] [INFO] Update successfully key: ${cacheKey}`
+      )
+    );
     return res.status(200).json({ message: "Update successfully" });
   } catch (error) {
-    console.error("[APP] Error updating user:", error);
+    console.error(
+      chalk.redBright(
+        `[${new Date().toISOString()}] [ERROR] Error updating user: ${error}`
+      )
+    );
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -68,14 +92,27 @@ app.delete("/user/:id", async (req, res) => {
     const deleted = await deleteUser(userId);
     if (!deleted) return res.status(404).json({ message: "User not found" });
 
+    console.log(
+      chalk.greenBright(
+        `[${new Date().toISOString()}] [INFO] Delete successfully key "${cacheKey}"`
+      )
+    );
     cacheClient.delete(cacheKey);
     return res.status(200).json({ message: "Delete successfully" });
   } catch (error) {
-    console.error("[APP] Error deleting user:", error);
+    console.error(
+      chalk.redBright(
+        `[${new Date().toISOString()}] [ERROR] Error deleting user: ${error}`
+      )
+    );
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Express API listening on port ${PORT}`);
+  console.log(
+    chalk.blueBright(
+      `[${new Date().toISOString()}] [INFO] Express API listening on port ${PORT}`
+    )
+  );
 });
