@@ -1,116 +1,137 @@
 import { parseCommand } from "../src/parse-command";
 
 describe("parseCommand", () => {
-  it("parses GET command", () => {
-    expect(parseCommand("GET myKey")).toEqual({ type: "GET", key: "myKey" });
-    expect(parseCommand("get myKey")).toEqual({ type: "GET", key: "myKey" });
-    expect(parseCommand("GET   anotherKey   ")).toEqual({
-      type: "GET",
-      key: "anotherKey",
+  // ---------------- GET ----------------
+  it("parses GET", () => {
+    expect(parseCommand("GET mykey")).toEqual({ type: "GET", key: "mykey" });
+  });
+
+  it("GET is case-insensitive", () => {
+    expect(parseCommand("get mykey")).toEqual({ type: "GET", key: "mykey" });
+  });
+
+  // ---------------- SET (unquoted) ----------------
+  it("parses SET with unquoted number", () => {
+    expect(parseCommand("SET mykey 123")).toEqual({
+      type: "SET",
+      key: "mykey",
+      value: 123, // parsed as number
+      ttl: 120,
     });
   });
 
-  it("parses DEL command", () => {
-    expect(parseCommand("DEL myKey")).toEqual({ type: "DELETE", key: "myKey" });
-    expect(parseCommand("del myKey")).toEqual({ type: "DELETE", key: "myKey" });
-    expect(parseCommand("DEL   anotherKey   ")).toEqual({
+  it("parses SET with unquoted boolean", () => {
+    expect(parseCommand("SET mykey true")).toEqual({
+      type: "SET",
+      key: "mykey",
+      value: true,
+      ttl: 120,
+    });
+  });
+
+  it("parses SET with unquoted JSON", () => {
+    expect(parseCommand('SET profile {"id":1,"name":"bob"} EX 30')).toEqual({
+      type: "SET",
+      key: "profile",
+      value: { id: 1, name: "bob" },
+      ttl: 30,
+    });
+  });
+
+  it("forces TTL minimum of 1", () => {
+    expect(parseCommand("SET mykey 5 EX 0")).toEqual({
+      type: "SET",
+      key: "mykey",
+      value: 5,
+      ttl: 1,
+    });
+  });
+
+  // ---------------- SET (quoted) ----------------
+  it("parses SET with quoted string", () => {
+    expect(parseCommand('SET mykey "hello"')).toEqual({
+      type: "SET",
+      key: "mykey",
+      value: "hello", // always string
+      ttl: 120,
+    });
+  });
+
+  it("quoted numeric stays string", () => {
+    expect(parseCommand('SET mykey "42"')).toEqual({
+      type: "SET",
+      key: "mykey",
+      value: "42",
+      ttl: 120,
+    });
+  });
+
+  it("quoted boolean stays string", () => {
+    expect(parseCommand('SET mykey "true"')).toEqual({
+      type: "SET",
+      key: "mykey",
+      value: "true",
+      ttl: 120,
+    });
+  });
+
+  it("quoted JSON stays string", () => {
+    expect(parseCommand('SET mykey "{\\"id\\":1}"')).toEqual({
+      type: "SET",
+      key: "mykey",
+      value: '{\\"id\\":1}',
+      ttl: 120,
+    });
+  });
+
+  // ---------------- DEL ----------------
+  it("parses DEL", () => {
+    expect(parseCommand("DEL mykey")).toEqual({ type: "DELETE", key: "mykey" });
+  });
+
+  it("DEL is case-insensitive", () => {
+    expect(parseCommand("del anotherKey")).toEqual({
       type: "DELETE",
       key: "anotherKey",
     });
   });
 
-  it("parses SET command with value and default TTL", () => {
-    expect(parseCommand('SET myKey "myValue"')).toEqual({
-      type: "SET",
-      key: "myKey",
-      value: "myValue",
-      ttl: 120,
-    });
-    expect(parseCommand('set myKey "myValue"')).toEqual({
-      type: "SET",
-      key: "myKey",
-      value: "myValue",
-      ttl: 120,
-    });
-    expect(parseCommand('SET myKey "myValue"   ')).toEqual({
-      type: "SET",
-      key: "myKey",
-      value: "myValue",
-      ttl: 120,
+  // ---------------- PING ----------------
+  it("parses PING", () => {
+    expect(parseCommand("PING")).toEqual({ type: "PING" });
+  });
+
+  it("PING with extra spaces", () => {
+    expect(parseCommand("   PING   ")).toEqual({ type: "PING" });
+  });
+
+  // ---------------- UNKNOWN ----------------
+  it("returns UNKNOWN for invalid command", () => {
+    expect(parseCommand("RANDOMCMD key")).toEqual({
+      type: "UNKNOWN",
+      original: "RANDOMCMD key",
     });
   });
 
-  it("parses SET command with value and explicit TTL", () => {
-    expect(parseCommand('SET myKey "myValue" EX 99')).toEqual({
+  it("handles empty input", () => {
+    expect(parseCommand("")).toEqual({ type: "UNKNOWN", original: "" });
+    expect(parseCommand("   ")).toEqual({ type: "UNKNOWN", original: "   " });
+  });
+
+  // ---------------- Edge cases ----------------
+  it("handles weird spacing in SET", () => {
+    expect(parseCommand('SET spacedKey "spaced   value" EX 5')).toEqual({
       type: "SET",
-      key: "myKey",
-      value: "myValue",
-      ttl: 99,
-    });
-    expect(parseCommand('SET myKey "myValue" EX 0')).toEqual({
-      type: "SET",
-      key: "myKey",
-      value: "myValue",
-      ttl: 1, // minimum TTL is 1
-    });
-    expect(parseCommand('SET myKey "myValue" ex 77')).toEqual({
-      type: "SET",
-      key: "myKey",
-      value: "myValue",
-      ttl: 77,
+      key: "spacedKey",
+      value: "spaced   value",
+      ttl: 5,
     });
   });
 
-  it("parses SET command with quoted value containing escaped quotes", () => {
-    expect(parseCommand('SET k "value with \\"quotes\\""')).toEqual({
-      type: "SET",
-      key: "k",
-      value: 'value with \\"quotes\\"',
-      ttl: 120,
-    });
-    expect(parseCommand('SET k "escaped \\\\ backslash"')).toEqual({
-      type: "SET",
-      key: "k",
-      value: "escaped \\\\ backslash",
-      ttl: 120,
-    });
-  });
-
-  it("returns UNKNOWN for invalid commands", () => {
-    expect(parseCommand("UNKNOWNCMD")).toEqual({
+  it("fails gracefully on malformed SET", () => {
+    expect(parseCommand("SET mykey")).toEqual({
       type: "UNKNOWN",
-      original: "UNKNOWNCMD",
-    });
-    expect(parseCommand("SET myKey myValue")).toEqual({
-      type: "UNKNOWN",
-      original: "SET myKey myValue",
-    });
-    expect(parseCommand("GET")).toEqual({
-      type: "UNKNOWN",
-      original: "GET",
-    });
-    expect(parseCommand("DEL")).toEqual({
-      type: "UNKNOWN",
-      original: "DEL",
-    });
-    expect(parseCommand("SET")).toEqual({
-      type: "UNKNOWN",
-      original: "SET",
-    });
-    expect(parseCommand("")).toEqual({
-      type: "UNKNOWN",
-      original: "",
-    });
-  });
-
-  it("does not match keys with spaces", () => {
-    expect(parseCommand('GET "key with spaces"')).toEqual({
-      type: "UNKNOWN",
-      original: 'GET "key with spaces"',
-    });
-    expect(parseCommand('SET "key with spaces" "value"')).toEqual({
-      type: "UNKNOWN",
-      original: 'SET "key with spaces" "value"',
+      original: "SET mykey",
     });
   });
 });

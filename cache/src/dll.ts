@@ -1,19 +1,20 @@
 export class DoublyLinkedListNode {
   key: string;
   value: string;
-  expiresAt: number;
+  expiresAt?: number;
   prev: DoublyLinkedListNode | null;
   next: DoublyLinkedListNode | null;
 
-  constructor(key: string, value: string, ttl: number) {
+  constructor(key: string, value: string, ttl?: number) {
     this.key = key;
     this.value = value;
-    this.expiresAt = Date.now() + ttl * 1000;
+    if (ttl) this.expiresAt = Date.now() + ttl * 1000;
     this.prev = null;
     this.next = null;
   }
 
   get isExpired() {
+    if (!this.expiresAt) return false;
     return Date.now() > this.expiresAt;
   }
 }

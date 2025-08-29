@@ -29,11 +29,11 @@ export class LRUCache {
     this.dll.deleteNode(node);
   }
 
-  set(key: string, value: string, ttl = 120) {
+  set(key: string, value: string, ttl?: number) {
     const existingNode = this.hashMap.get(key);
     if (existingNode) {
       existingNode.value = value;
-      existingNode.expiresAt = Date.now() + ttl * 1000; // in seconds
+      if (ttl) existingNode.expiresAt = Date.now() + ttl * 1000; // in seconds
       this.dll.deleteNode(existingNode);
       this.dll.append(existingNode);
       return;

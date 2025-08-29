@@ -1,3 +1,5 @@
+import chalk from "chalk";
+
 const mockUsers = Array.from({ length: 1_000_000 }, (_, i) => ({
   id: (i + 1).toString(),
   name: `User ${i + 1}`,
@@ -12,10 +14,27 @@ export async function fetchUserFromDB(userId: string) {
     setTimeout(() => {
       const userData = mockUsers.find((user) => user.id === userId);
       console.log(
-        `[${new Date().toISOString()}] [APP] Fetched user ${userId} from DB.`
+        chalk.greenBright(
+          `[${new Date().toISOString()}] [APP] Fetched user ${userId} from DB.`
+        )
       );
       resolve(userData);
-    }, 1000)
+    }, 2000)
+  );
+}
+
+export async function createUser(): Promise<(typeof mockUsers)[0]> {
+  const userId = Date.now();
+  return new Promise((resolve) =>
+    setTimeout(() => {
+      const newUser = {
+        id: userId.toString(),
+        name: `User ${userId}`,
+        email: `user${userId}@example.com`,
+      };
+      mockUsers.push(newUser);
+      resolve(newUser);
+    }, 2000)
   );
 }
 
@@ -38,7 +57,7 @@ export async function updateUser(
         mockUsers[index] = { id: userId, ...body };
         resolve(mockUsers[index]);
       }
-    }, 1000)
+    }, 2000)
   );
 }
 
@@ -61,6 +80,6 @@ export async function deleteUser(
         mockUsers.splice(index, 1);
         resolve(user);
       }
-    }, 1000)
+    }, 2000)
   );
 }

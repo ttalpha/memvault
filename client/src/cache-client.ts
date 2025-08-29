@@ -3,14 +3,14 @@ import chalk from "chalk";
 import { AVLTree, BSTNode } from "./avl";
 import { getHashRingIndex } from "./hash";
 
-interface SocketInfo {
+export interface SocketInfo {
   socket: net.Socket;
   vnode: number;
   host: string;
   port: number;
 }
 
-export default class CacheClient {
+export class CacheClient {
   private avlTree = new AVLTree<SocketInfo>();
   private replicationFactor = 3;
 
@@ -52,7 +52,7 @@ export default class CacheClient {
     const HOST = host ?? "127.0.0.1";
 
     try {
-      const socket = await this.tryConnect(PORT, HOST, maxRetries, retryDelay);
+      const socket = await this.ping(PORT, HOST, maxRetries, retryDelay);
       const ringIndices: number[] = [];
 
       for (let i = 0; i < vnodes; i++) {
@@ -90,7 +90,7 @@ export default class CacheClient {
     }
   }
 
-  private tryConnect(
+  ping(
     port: number,
     host: string,
     maxRetries: number,
@@ -135,7 +135,7 @@ export default class CacheClient {
             )
           );
           setTimeout(() => {
-            this.tryConnect(port, host, maxRetries, retryDelay, attempt + 1)
+            this.ping(port, host, maxRetries, retryDelay, attempt + 1)
               .then(resolve)
               .catch(reject);
           }, retryDelay);
@@ -234,9 +234,7 @@ export default class CacheClient {
     });
   }
 
-  set(key: string, value: string, ttl: number = 120) {
-    const escaped = value.replace(/"/g, '\\"');
-
+  set(key: string, value: number | string, ttl: number = 120) {
     return new Promise((resolve, reject) => {
       const [leaderIndex, socketInfo] = this.getSocketInfo(key);
       const { socket } = socketInfo;
@@ -257,7 +255,7 @@ export default class CacheClient {
         }
       };
 
-      this.sendCommand(socket, `SET ${key} "${escaped}" EX ${ttl}`);
+      this.sendCommand(socket, `SET ${key} ${value} EX ${ttl}`);
       socket.on("data", onData);
 
       for (const replica of replicas) {
@@ -269,7 +267,7 @@ export default class CacheClient {
             }:${r.port}`
           )
         );
-        this.sendCommand(r.socket, `SET ${key} "${escaped}" EX ${ttl}`);
+        this.sendCommand(r.socket, `SET ${key} ${value} EX ${ttl}`);
         r.socket.on("data", onData);
       }
     });
