@@ -1,5 +1,6 @@
 import net from "net";
 import chalk from "chalk";
+import { parseValue } from "memvault-utils";
 import { AVLTree, BSTNode } from "./avl";
 import { getHashRingIndex } from "./hash";
 
@@ -199,7 +200,7 @@ export class CacheClient {
     }
   }
 
-  get(key: string): Promise<string | null> {
+  get<T>(key: string): Promise<T | null> {
     return new Promise((resolve, reject) => {
       const [, socketInfo] = this.getSocketInfo(key);
       const { socket } = socketInfo;
@@ -213,17 +214,15 @@ export class CacheClient {
         if (data.startsWith("ERROR ")) {
           reject(new Error(data));
         } else if (data.startsWith("OK ")) {
-          const cleanValue = data.slice(3).replace(/\\/g, "");
+          const value = parseValue(data.slice(3));
           console.log(
-            chalk.greenBright(
-              `[${new Date().toISOString()}] [INFO] GET → "${cleanValue}"`
-            )
+            chalk.greenBright(`[${new Date().toISOString()}] [INFO] GET ${key}`)
           );
-          resolve(cleanValue);
+          resolve(value);
         } else if (data === "NOT_FOUND") {
           console.log(
             chalk.yellow(
-              `[${new Date().toISOString()}] [WARN] Key "${key}" not found`
+              `[${new Date().toISOString()}] [WARN] Key ${key} not found`
             )
           );
           resolve(null);
@@ -246,7 +245,7 @@ export class CacheClient {
         if (data === "OK") {
           console.log(
             chalk.greenBright(
-              `[${new Date().toISOString()}] [INFO] SET "${key}" successful`
+              `[${new Date().toISOString()}] [INFO] SET ${key} successful`
             )
           );
           resolve(data);
@@ -262,7 +261,7 @@ export class CacheClient {
         const r = replica.value;
         console.log(
           chalk.cyanBright(
-            `[${new Date().toISOString()}] [REPLICA] → Replicating SET "${key}" to ${
+            `[${new Date().toISOString()}] [REPLICA] → Replicating SET ${key} to ${
               r.host
             }:${r.port}`
           )

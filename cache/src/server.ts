@@ -3,7 +3,7 @@ import { parseCommand } from "./parse-command";
 import { LRUCache } from "./lru";
 import chalk from "chalk";
 
-export default class CacheServer {
+export class CacheServer {
   private lruCache = new LRUCache(5);
   private server: net.Server | null = null;
 
@@ -13,8 +13,14 @@ export default class CacheServer {
   private get(key: string) {
     try {
       const value = this.lruCache.get(key);
-      if (!value) return "NOT_FOUND";
-      return `OK ${value}`;
+      if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+      ) {
+        return `OK ${value}`;
+      }
+      return `OK ${JSON.stringify(value)}`;
     } catch (error) {
       return `ERROR ${error}`;
     }

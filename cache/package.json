@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "start": "node dist/index.js",
     "test": "jest",
     "build": "tsc",
     "test:watch": "jest --watch",
@@ -22,7 +23,6 @@
   },
   "dependencies": {
     "chalk": "^5.4.1",
-    "express": "^5.1.0",
-    "memvault": "file:./client"
+    "express": "^5.1.0"
   }
 }

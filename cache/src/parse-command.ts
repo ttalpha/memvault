@@ -1,11 +1,11 @@
-import { parseValue } from "./parse-value";
+import { parseValue } from "memvault-utils";
 
 export const VALID_GET_COMMAND = /^GET\s+(\S+)\s*$/i;
 export const VALID_DELETE_COMMAND = /^DEL\s+(\S+)\s*$/i;
 
 // SET key "string value" [EX ttl] OR SET key rawValue [EX ttl]
 export const VALID_SET_COMMAND =
-  /^SET\s+(\S+)\s+("(?:[^"]*)"?|\S+)(?:\s+EX\s+(\d+))?\s*$/i;
+  /^SET\s+(\S+)\s+("[^"]*"|\{.*\}|\[.*\]|true|false|\S+)(?:\s+EX\s+(\d+))?\s*$/i;
 
 export const VALID_PING_COMMAND = /^\s*PING\s*$/i;
 

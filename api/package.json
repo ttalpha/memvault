@@ -1,7 +1,7 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
     "start": "node dist/index.js",
@@ -20,9 +20,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "api": "../client",
     "chalk": "^5.6.0",
-    "express": "^5.1.0",
-    "memvault": "../client/dist"
+    "express": "^5.1.0"
   }
 }

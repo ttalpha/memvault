@@ -2,6 +2,7 @@ import express from "express";
 import chalk from "chalk";
 import { CacheClient } from "memvault";
 import { createUser, deleteUser, fetchUserFromDB, updateUser } from "./users";
+import { User } from "./types";
 
 const app = express();
 const cacheClient = new CacheClient();
@@ -20,7 +21,7 @@ app.get("/user/:id", async (req, res) => {
 
   try {
     // 1. Try to get from MemVault
-    const cachedUser = await cacheClient.get(cacheKey);
+    const cachedUser = await cacheClient.get<User>(cacheKey);
     if (cachedUser) {
       console.log(
         chalk.greenBright(
@@ -28,7 +29,7 @@ app.get("/user/:id", async (req, res) => {
         )
       );
 
-      return res.json({ source: "cache", data: JSON.parse(cachedUser) });
+      return res.json({ source: "cache", data: cachedUser });
     }
 
     console.log(
@@ -58,7 +59,6 @@ app.get("/user/:id", async (req, res) => {
 });
 
 app.post("/user", async (req, res) => {
-  const { name, email } = req.body;
   try {
     const newUser = await createUser();
     const cacheKey = `user:${newUser.id}`;

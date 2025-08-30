@@ -1,5 +1,5 @@
 {
-  "name": "memvault",
+  "name": "memvault-utils",
   "version": "1.0.0",
   "main": "dist/index.js",
   "license": "MIT",
@@ -12,6 +12,7 @@
     "dev": "nodemon"
   },
   "devDependencies": {
+    "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.15",
     "jest": "^30.0.4",
@@ -19,8 +20,5 @@
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "chalk": "^5.4.1"
   }
 }

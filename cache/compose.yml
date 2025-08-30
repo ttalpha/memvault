@@ -3,58 +3,48 @@ services:
     image: memvault/cache:latest
     ports:
       - "6379:6379"
-    command: ["yarn", "start"]
 
   node-b:
     image: memvault/cache:latest
     ports:
       - "6380:6379"
-    command: ["yarn", "start"]
 
   node-c:
     image: memvault/cache:latest
     ports:
       - "6381:6379"
-    command: ["yarn", "start"]
 
   node-d:
     image: memvault/cache:latest
     ports:
       - "6382:6379"
-    command: ["yarn", "start"]
 
   node-e:
     image: memvault/cache:latest
     ports:
       - "6383:6379"
-    command: ["yarn", "start"]
 
   node-f:
     image: memvault/cache:latest
     ports:
       - "6384:6379"
-    command: ["yarn", "start"]
 
   node-g:
     image: memvault/cache:latest
     ports:
       - "6385:6379"
-    command: ["yarn", "start"]
 
   node-h:
     image: memvault/cache:latest
     ports:
       - "6386:6379"
-    command: ["yarn", "start"]
 
   node-i:
     image: memvault/cache:latest
     ports:
       - "6387:6379"
-    command: ["yarn", "start"]
 
   node-j:
     image: memvault/cache:latest
     ports:
       - "6388:6379"
-    command: ["yarn", "start"]
